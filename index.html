@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Memory</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 10px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 320px;
+      margin: 20px auto;
+    }
+
+    .box {
+      aspect-ratio: 1;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(20px, 6vw, 30px);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .box:active {
+      transform: scale(0.95);
+    }
+
+    .hidden {
+      color: transparent;
+    }
+
+    .correct {
+      background: green !important;
+    }
+
+    .wrong {
+      background: crimson !important;
+    }
+
+    button {
+      padding: 12px;
+      width: 90%;
+      max-width: 250px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #00aaff;
+      color: white;
+      cursor: pointer;
+    }
+
+    #info {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Flash Memory</h1>
+  <button onclick="startGame()">Start</button>
+  <div id="info">Round: 1</div>
+
+  <div id="grid"></div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const info = document.getElementById("info");
+
+    let round = 1;
+    let sequence = [];
+    let userStep = 0;
+    let clickable = false;
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function createGrid(count) {
+      grid.innerHTML = "";
+      let nums = shuffle([...Array(count).keys()].map(n => n + 1));
+
+      nums.forEach(num => {
+        const box = document.createElement("div");
+        box.className = "box";
+        box.textContent = num;
+
+        box.onclick = () => handleClick(box, num);
+
+        grid.appendChild(box);
+      });
+    }
+
+    function showNumbers() {
+      const boxes = document.querySelectorAll(".box");
+      boxes.forEach(box => box.classList.remove("hidden"));
+
+      setTimeout(() => {
+        boxes.forEach(box => box.classList.add("hidden"));
+        clickable = true;
+      }, Math.max(1000, 2000 - round * 100));
+    }
+
+    function handleClick(box, num) {
+      if (!clickable) return;
+
+      if (num === userStep + 1) {
+        box.classList.add("correct");
+        userStep++;
+
+        if (userStep === sequence.length) {
+          nextRound();
+        }
+      } else {
+        box.classList.add("wrong");
+        gameOver();
+      }
+    }
+
+    function nextRound() {
+      clickable = false;
+      userStep = 0;
+      round++;
+      info.textContent = "Round: " + round;
+
+      setTimeout(startRound, 800);
+    }
+
+    function gameOver() {
+      clickable = false;
+      info.textContent = "Game Over at Round " + round;
+    }
+
+    function startRound() {
+      sequence = [...Array(Math.min(9, round + 2)).keys()].map(n => n + 1);
+      createGrid(sequence.length);
+      showNumbers();
+    }
+
+    function startGame() {
+      round = 1;
+      info.textContent = "Round: 1";
+      startRound();
+    }
+  </script>
+
+</body>
+</html>
